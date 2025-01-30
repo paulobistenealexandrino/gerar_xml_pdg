@@ -194,3 +194,23 @@ def gerar_xml_pdg(ano: int, cod_processo: int, cod_mes: int, acumulado: bool):
     return gerar_xml_pdg_anual(ano, cod_processo)
   else:
     return gerar_xml_pdg_mensal(ano, cod_processo, cod_mes, acumulado)
+
+def main():
+  '''
+  Função principal do programa
+  '''
+  # Ajusta os parâmetros
+  ano = input('Insira o ano: ')
+  cod_processo = int(input('Insira o código do processo: '))
+  cod_mes = None
+  acumulado = True
+  
+  if cod_processo in [2, 4, 6]:
+    cod_mes = int(input('Insira o mês de referência: '))
+  if cod_processo == 6:
+    acumulado = bool(int(input('Os valores devem ser apresentados acumulados mês a mês? (Sim: 1/Não: 0): ')))
+  else:
+    acumulado = True
+
+  # Gera o arquivo XML
+  return gerar_xml_pdg(ano, cod_processo, cod_mes, acumulado)
