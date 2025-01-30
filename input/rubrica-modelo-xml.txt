@@ -1,1 +1,0 @@
-<ns1:rubrica codigo="{CODIGO}" nome="{NOME}"><ns1:valor>{VALOR}</ns1:valor><ns1:justificativa></ns1:justificativa></ns1:rubrica>

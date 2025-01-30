@@ -1,1 +1,0 @@
-<ns1:mes mes="{MES}">{RUBRICAS}</ns1:mes>
