@@ -6,18 +6,10 @@ import os
 import gdown
 import pandas as pd
 import time
+from google.colab import files
+from datetime import date
 
 # Funções
-
-def baixar_diretorio() -> None:
-  """
-  Baixa do GitHub o diretório contendo os arquivos necessários ao funcionamento do programa
-  """
-  dir_path = '/content/gerar_xml_pdg'
-
-  if not os.path.exists(dir_path):
-    repo_url = 'https://github.com/paulobistenealexandrino/gerar_xml_pdg'
-    os.system(f'git clone {repo_url}')
 
 def baixar_xlsx(cod_processo: int) -> None:
   """
@@ -49,8 +41,7 @@ def preencher_rubricas(dados) -> str:
     nome = dados.iloc[i, 1]
     valor = dados.iloc[i, 2]
 
-    rubrica = f'''
-      <ns1:rubrica codigo="{codigo}" nome="{nome}">
+    rubrica = f'''<ns1:rubrica codigo="{codigo}" nome="{nome}">
         <ns1:valor>{valor}</ns1:valor>
         <ns1:justificativa></ns1:justificativa>
       </ns1:rubrica>
@@ -73,8 +64,7 @@ def preencher_meses(dados, cod_mes: int, acumulado: bool) -> str:
     for i in range(0, cod_mes):
       mes = i + 1
       rubricas = preencher_rubricas(dados.iloc[:, [0, 1, mes + 1]])
-      mes_preenchido = f'''
-      <ns1:mes mes="{mes}">
+      mes_preenchido = f'''<ns1:mes mes="{mes}">
         {rubricas}
       </ns1:mes>'''
       bloco_meses_preenchido = bloco_meses_preenchido + mes_preenchido
@@ -82,8 +72,7 @@ def preencher_meses(dados, cod_mes: int, acumulado: bool) -> str:
   else:
     mes = cod_mes
     rubricas = preencher_rubricas(dados.iloc[:, [0, 1, mes + 1]])
-    bloco_meses_preenchido = f'''
-      <ns1:mes mes="{mes}">
+    bloco_meses_preenchido = f'''<ns1:mes mes="{mes}">
         {rubricas}
       </ns1:mes>'''
 
@@ -120,21 +109,20 @@ def gerar_xml_pdg_anual(ano: int, cod_processo: int) -> str:
   processo = descrever_processo(cod_processo)
   rubricas = preencher_rubricas(input_pdg)
 
-  xml_pdg_anual_preenchido = f'''
-  <?xml version="1.0" encoding="UTF-8"?>
-  <ns1:manterPDG
-    xmlns:ns1="http://siest.planejamento.gov.br/xsd/pdg/2013/1/31">
-    <ns1:paramPDG>
-      <ns1:exercicio>{ano}</ns1:exercicio>
-      <ns1:{processo}>
-        <ns1:empresa codigo="7609" nome="7609 - ELETRONUCLEAR">
-          <ns1:blocoOrcamentario>
-            {rubricas}
-          </ns1:blocoOrcamentario>
-        </ns1:empresa>
-      </ns1:{processo}>
-    </ns1:paramPDG>
-  </ns1:manterPDG>'''
+  xml_pdg_anual_preenchido = f'''<?xml version="1.0" encoding="UTF-8"?>
+<ns1:manterPDG
+  xmlns:ns1="http://siest.planejamento.gov.br/xsd/pdg/2013/1/31">
+  <ns1:paramPDG>
+    <ns1:exercicio>{ano}</ns1:exercicio>
+    <ns1:{processo}>
+      <ns1:empresa codigo="7609" nome="7609 - ELETRONUCLEAR">
+        <ns1:blocoOrcamentario>
+          {rubricas}
+        </ns1:blocoOrcamentario>
+      </ns1:empresa>
+    </ns1:{processo}>
+  </ns1:paramPDG>
+</ns1:manterPDG>'''
 
   return xml_pdg_anual_preenchido
 
@@ -159,23 +147,22 @@ def gerar_xml_pdg_mensal(ano: int, cod_processo: int, cod_mes: int, acumulado: b
   processo = descrever_processo(cod_processo)
   bloco_meses = preencher_meses(input_pdg, cod_mes, acumulado)
 
-  xml_pdg_mensal_preenchido = f'''
-  <?xml version="1.0" encoding="UTF-8"?>
-  <ns1:manterPDG
-    xmlns:ns1="http://siest.planejamento.gov.br/xsd/pdg/2013/1/31">
-    <ns1:paramPDG>
-      <ns1:exercicio>{ano}</ns1:exercicio>
-      <ns1:{processo}>
-        <ns1:empresa codigo="7609" nome="7609 - ELETRONUCLEAR">
-          <ns1:blocoOrcamentario>
-            <ns1:meses>
-              {bloco_meses}
-            </ns1:meses>
-          </ns1:blocoOrcamentario>
-        </ns1:empresa>
-      </ns1:{processo}>
-    </ns1:paramPDG>
-  </ns1:manterPDG>
+  xml_pdg_mensal_preenchido = f'''<?xml version="1.0" encoding="UTF-8"?>
+<ns1:manterPDG
+  xmlns:ns1="http://siest.planejamento.gov.br/xsd/pdg/2013/1/31">
+  <ns1:paramPDG>
+    <ns1:exercicio>{ano}</ns1:exercicio>
+    <ns1:{processo}>
+      <ns1:empresa codigo="7609" nome="7609 - ELETRONUCLEAR">
+        <ns1:blocoOrcamentario>
+          <ns1:meses>
+            {bloco_meses}
+          </ns1:meses>
+        </ns1:blocoOrcamentario>
+      </ns1:empresa>
+    </ns1:{processo}>
+  </ns1:paramPDG>
+</ns1:manterPDG>
   '''
 
   return xml_pdg_mensal_preenchido
@@ -195,6 +182,21 @@ def gerar_xml_pdg(ano: int, cod_processo: int, cod_mes: int, acumulado: bool):
   else:
     return gerar_xml_pdg_mensal(ano, cod_processo, cod_mes, acumulado)
 
+def baixar_xml(xml_pdg: str, cod_processo: int) -> None:
+  """
+  Baixa o arquivo XML
+
+  Key arguments:
+  xml_pdg -- arquivo XML a ser baixado
+  """
+  data_atual = date.today()
+  processo = descrever_processo(cod_processo)
+  file_name = f'XML-PDG-{processo}-{data_atual}.txt'
+  with open(file_name, 'w') as file:
+    file.write(xml_pdg)
+
+  files.download(file_name)
+
 def main():
   '''
   Função principal do programa
@@ -213,4 +215,9 @@ def main():
     acumulado = True
 
   # Gera o arquivo XML
-  return gerar_xml_pdg(ano, cod_processo, cod_mes, acumulado)
+  xml_pdg = gerar_xml_pdg(ano, cod_processo, cod_mes, acumulado)
+
+  # Baixa arquivo final
+  baixar_xml(xml_pdg, cod_processo)
+  
+  return None
