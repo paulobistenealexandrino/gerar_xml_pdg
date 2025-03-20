@@ -37,11 +37,15 @@ def preencher_rubricas(dados) -> str:
   rubricas_preenchidas = ''
 
   for i in range(len(dados)):
-    codigo = dados.iloc[i, 0]
-    nome = dados.iloc[i, 1]
+    
     valor = dados.iloc[i, 2]
-
-    rubrica = f'''<ns1:rubrica codigo="{codigo}" nome="{nome}">
+    if math.isnan(valor):
+      continue
+    else:
+      valor = int(round(valor))   
+      codigo = dados.iloc[i, 0]
+    
+    rubrica = f'''<ns1:rubrica codigo="{codigo}" nome="">
         <ns1:valor>{valor}</ns1:valor>
         <ns1:justificativa></ns1:justificativa>
       </ns1:rubrica>
@@ -210,7 +214,7 @@ def main():
   if cod_processo in [2, 4, 6]:
     cod_mes = int(input('Insira o mês de referência: '))
   if cod_processo == 6:
-    acumulado = bool(int(input('Os valores devem ser apresentados acumulados mês a mês? (Sim: 1/Não: 0): ')))
+    acumulado = bool(int(input('Incluir meses anteriores ao mês de referência? (Sim: 1/Não: 0): ')))
   else:
     acumulado = True
 
